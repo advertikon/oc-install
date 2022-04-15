@@ -1,0 +1,32 @@
+version: "3.3"
+
+services:
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - /var/www/html/test/www:/var/www/html:rw
+      - /var/www/html/test/nginx.conf:/etc/nginx/conf.d/default.conf:rw
+
+  php:
+    image: bogochunas/php-fpm:8.0
+    volumes:
+      - /var/www/html/test/www:/var/www/html:rw
+
+  mysql:
+    image: mysql:8.0-debian
+    environment:
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "root"
+      MYSQL_DATABASE: "oc"
+      MYSQL_ROOT_PASSWORD: "root"
+
+  open-cart:
+    image: bogochunas/open-cart:$OC_VERSION
+    depends_on:
+      - nginx
+      - php
+      - mysql
+    volumes:
+      - /var/www/html/test/www:/var/www/html:rw
