@@ -7,20 +7,40 @@ services:
       - "80:80"
     volumes:
       - /var/www/html/test/www:/var/www/html:rw
-      - /var/www/html/test/nginx.conf:/etc/nginx/conf.d/default.conf:rw
+      - /var/www/html/test/default.conf:/etc/nginx/conf.d/default.conf:rw
+      - /var/www/html/test/nginx.conf:/etc/nginx/nginx.conf:rw
 
   php:
     image: bogochunas/php-fpm:8.0
     volumes:
       - /var/www/html/test/www:/var/www/html:rw
+      - /var/www/html/test/php.ini:/usr/local/etc/php/conf.d/custom.php.ini
 
   mysql:
-    image: mysql:8.0-debian
+    image: mysql:5.6
+    ports:
+      - "3306:3306"
     environment:
       MYSQL_USER: "user"
       MYSQL_PASSWORD: "root"
       MYSQL_DATABASE: "oc"
       MYSQL_ROOT_PASSWORD: "root"
+
+  ftp:
+    image: fauria/vsftpd
+    ports:
+      - "20:20"
+      - "21:21"
+      - "21100-21110:21100-21110"
+    environment:
+      FTP_USER: "user"
+      FTP_PASS: "root"
+      PASV_ADDRESS: "127.0.0.1"
+      PASV_MIN_PORT: "21100"
+      PASV_MAX_PORT: "21110"
+      LOCAL_UMASK: "000"
+    volumes:
+      - /var/www/html/test/www:/home/vsftpd/user:rw
 
   open-cart:
     image: bogochunas/open-cart:$OC_VERSION
@@ -28,5 +48,6 @@ services:
       - nginx
       - php
       - mysql
+      - ftp
     volumes:
       - /var/www/html/test/www:/var/www/html:rw
